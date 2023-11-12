@@ -196,64 +196,63 @@ if admin_access == 1:
         st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
 
     if st.button("랜덤 매칭 시작"):
-        user_data_file = 'user_data.csv'
-        matching_result_file = 'matching_result.csv'
+         user_data_file = 'user_data.csv'
+          matching_result_file = 'matching_result.csv'
 
-        user_data = pd.read_csv(user_data_file)
-        matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
+         user_data = pd.read_csv(user_data_file)
+         matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
 
-        # 남자와 여자를 분리
-        male_users = user_data[user_data['성별'] == '남자']
-        female_users = user_data[user_data['성별'] == '여자']
+    # 남자와 여자를 분리
+         male_users = user_data[user_data['성별'] == '남자']
+         female_users = user_data[user_data['성별'] == '여자']
 
-        # 일반 매칭을 생성
-        matchings = []
-        while len(male_users) > 0 and len(female_users) > 0:
-            male = male_users.sample(1)
-            female = female_users.sample(1)
-            matching = (male['이름'].values[0], female['이름'].values[0])
-            matchings.append(matching)
-            male_users = male_users.drop(male.index)
-            female_users = female_users.drop(female.index)
+    # 일반 매칭을 생성
+         matchings = []
+         while len(male_users) > 0 and len(female_users) > 0:
+             male = male_users.sample(1)
+             female = female_users.sample(1)
+             matching = (male['이름'].values[0], female['이름'].values[0])
+             matchings.append(matching)
+             male_users = male_users.drop(male.index)
+             female_users = female_users.drop(female.index)
 
-        # 나머지 매칭 결과 출력
-        for i, (male, female) in enumerate(matchings):
-            st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
+    # 나머지 매칭 결과 출력
+         for i, (male, female) in enumerate(matchings):
+             st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
 
-            # 매칭 결과를 matching_result에 추가
-            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '남자', '이름': male}, ignore_index=True)
-            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '여자', '이름': female}, ignore_index=True)
+        # 매칭 결과를 matching_result에 추가
+             matching_result = pd.concat([matching_result, pd.DataFrame({'매칭 그룹': [i + 1], '성별': ['남자'], '이름': [male]})], ignore_index=True)
+             matching_result = pd.concat([matching_result, pd.DataFrame({'매칭 그룹': [i + 1], '성별': ['여자'], '이름': [female]})], ignore_index=True)
 
-        # 남는 남자들을 소외된 데이터로 만들어 결과로 출력
-        leftover_male_count = len(male_users)
-        if leftover_male_count > 0:
-            st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
-            leftover_group_count = leftover_male_count // 2
-            i = len(matchings)
+    # 남는 남자들을 소외된 데이터로 만들어 결과로 출력
+         leftover_male_count = len(male_users)
+         if leftover_male_count > 0:
+             st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
+             leftover_group_count = leftover_male_count // 2
+             i = len(matchings)
 
-            for group in range(leftover_group_count):
-                group_text = f"{i + group + 1}"
-                group_males = male_users.sample(2)
-                male_users = male_users.drop(group_males.index)
+             for group in range(leftover_group_count):
+                 group_text = f"{i + group + 1}"
+                 group_males = male_users.sample(2)
+                 male_users = male_users.drop(group_males.index)
 
-                st.text(f"매칭 그룹 {group_text} (남자 2명):")
-                for male in group_males['이름']:
-                    st.text(male)
-                # 소외된 남자 매칭 결과를 matching_result에 추가
-                    matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
+                 st.text(f"매칭 그룹 {group_text} (남자 2명):")
+                 for male in group_males['이름']:
+                     st.text(male)
+            # 소외된 남자 매칭 결과를 matching_result에 추가
+                 matching_result = pd.concat([matching_result, pd.DataFrame({'매칭 그룹': [group_text], '성별': ['남자'], '이름': group_males['이름'].tolist()})], ignore_index=True)
 
-            # 홀수명의 남자는 단독으로 소외된 데이터 그룹에 추가
-            if len(male_users) == 1:
-                i += leftover_group_count
-                group_text = f"{i + 1}"
-                st.text(f"매칭 그룹 {group_text} (남자 1명):")
-                st.text(male_users.iloc[0]['이름'])
-                # 소외된 남자 매칭 결과를 matching_result에 추가
-                matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
+        # 홀수명의 남자는 단독으로 소외된 데이터 그룹에 추가
+             if len(male_users) == 1:
+                 i += leftover_group_count
+                 group_text = f"{i + 1}"
+                 st.text(f"매칭 그룹 {group_text} (남자 1명):")
+                 st.text(male_users.iloc[0]['이름'])
+            # 소외된 남자 매칭 결과를 matching_result에 추가
+                 matching_result = pd.concat([matching_result, pd.DataFrame({'매칭 그룹': [group_text], '성별': ['남자'], '이름': [male_users.iloc[0]['이름']]})], ignore_index=True)
 
-        # CSV 파일로 저장 (matching_result에 저장)
-        matching_result.to_csv(matching_result_file, index=False)
-
+    # CSV 파일로 저장 (matching_result에 저장)
+         matching_result.to_csv(matching_result_file, index=False)
 # 오류 정보를 저장할 변수
     error_info = []
 
