@@ -3,6 +3,8 @@ import pandas as pd
 import random
 import time
 import os
+import matplotlib.pyplot as plt
+
 
 # Your other code here.
 male_percentage = 0
@@ -12,6 +14,10 @@ female_match_probability = 0
 
 # 오른쪽 위 모서리에 텍스트 추가
 st.markdown('<p style="position: absolute; top: 10px; right: 10px; color: blue; font-size: 24px; font-weight: bold;">iOS</p>', unsafe_allow_html=True)
+
+plt.rc('font', family = 'AppleGothic') # mac 
+plt.rc('font', size = 15)
+plt.rc('axes', unicode_minus = False) 
 
 # 사용자 정보를 저장할 CSV 파일명
 csv_file = "user_data.csv"
@@ -26,6 +32,7 @@ if "users" not in st.session_state:
 else:
     if os.path.exists(csv_file):
         st.session_state.users = pd.read_csv(csv_file)
+
 
 def load_matching_result():
     if os.path.exists(matching_result_file):
@@ -115,9 +122,10 @@ user_data = pd.read_csv("user_data.csv")
 male_users = user_data[user_data['성별'] == '남자']
 female_users = user_data[user_data['성별'] == '여자']
 
-# 관리자 비밀번호 설정
 admin_password = "jhny0403"
 admin_access = 0
+admin_password2 = "jhny0403"
+admin_access2 = False 
 empty_data = pd.DataFrame(columns=["이름", "나이", "성별", "전화번호","그룹"])
 empty_data1 = pd.DataFrame(columns=["이름", "전화번호","그룹"])
 
@@ -142,6 +150,9 @@ if admin_access == 1:
     user_data_file = 'user_data.csv'
     user_data = pd.read_csv(user_data_file)
 
+
+
+
 # Streamlit 앱 생성
     st.title("유저 데이터 검색")
 
@@ -165,120 +176,151 @@ if admin_access == 1:
     gender_counts = user_data["성별"].value_counts()
     total_users = gender_counts.sum()
     if total_users >= 2:
-        male_count = gender_counts.get("남자", 0)
-        female_count = gender_counts.get("여자", 0)
+            male_count = gender_counts.get("남자", 0)
+            female_count = gender_counts.get("여자", 0)
+            
+            male_percentage = (male_count / total_users) * 100
+            female_percentage = (female_count / total_users) * 100
+            
+            # 가로 막대 그래프로 백분율 표시
+            fig, ax = plt.subplots(figsize=(8, 2))
+            ax.barh(["남자", "여자"], [male_percentage, female_percentage], color=["blue", "red"])
+            ax.set_xlim(0, 100)
+            ax.set_xlabel("참여현황 백분율 (%)")
+            ax.set_ylabel("성별")
+            for i, v in enumerate([male_percentage, female_percentage]):
+                ax.text(v + 3, i, f"{v:.1f}%", color="black", va="center")
 
-        male_percentage = (male_count / total_users) * 100
-        female_percentage = (female_count / total_users) * 100
+            st.pyplot(fig)
+            user_data = pd.read_csv("user_data.csv")
+# 매칭 확률 계산
+# 먼저 성별 비율을 계산
+            total_count = male_count + female_count
+# 사용자 데이터를 불러오기
+            user_data = pd.read_csv('user_data.csv')  # user_data.csv 파일 경로에 따라 수정
 
-        st.write(f"남자 수: {male_count}")
-        st.write(f"여자 수: {female_count}")
-        st.write(f"총 사용자 수: {male_count + female_count}")
+# 성별을 기반으로 "male", "female" 및 "total" 값을 계산
+            male_count = st.session_state.users[st.session_state.users["성별"] == "남자"].shape[0]
+            female_count = st.session_state.users[st.session_state.users["성별"] == "여자"].shape[0]
 
-        if total_users == 0:
-            male_match_probability = 0
-            female_match_probability = 0
-        elif female_count == 0:
-            male_match_probability = 100
-            female_match_probability = 0
-        else:
-            male_percentage = male_count / total_users
-            female_percentage = female_count / total_users
+            st.write(f"남자 수: {male_count}")
+            st.write(f"여자 수: {female_count}")
+            st.write(f"총 사용자 수: {male_count + female_count}")
+# 결과 출력
 
-            if male_percentage > female_percentage:
+
+            if total_count == 0:
+              male_match_probability = 0
+              female_match_probability = 0
+            elif female_count == 0:
+              male_match_probability = 100
+              female_match_probability = 0
+            else:
+              male_percentage = male_count / total_count
+              female_percentage = female_count / total_count
+
+              if male_percentage > female_percentage:
                 male_match_probability = 100
                 female_match_probability = female_count / male_count * 100
-            else:
+              else:
                 female_match_probability = 100
                 male_match_probability = male_count / female_count * 100
 
-        st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
-        st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
+            st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
+            st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
 
     if st.button("랜덤 매칭 시작"):
-        user_data_file = 'user_data.csv'
-        matching_result_file = 'matching_result.csv'
+         user_data_file = 'user_data.csv'
+         matching_result_file = 'matching_result.csv'
 
-        user_data = pd.read_csv(user_data_file)
-        matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
+         user_data = pd.read_csv(user_data_file)
+         matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
 
-        # 남자와 여자를 분리
-        male_users = user_data[user_data['성별'] == '남자']
-        female_users = user_data[user_data['성별'] == '여자']
+    # 남자와 여자를 분리
+         male_users = user_data[user_data['성별'] == '남자']
+         female_users = user_data[user_data['성별'] == '여자']
 
-        # 일반 매칭을 생성
-        matchings = []
-        while len(male_users) > 0 and len(female_users) > 0:
-            male = male_users.sample(1)
-            female = female_users.sample(1)
-            matching = (male['이름'].values[0], female['이름'].values[0])
-            matchings.append(matching)
-            male_users = male_users.drop(male.index)
-            female_users = female_users.drop(female.index)
+    # 일반 매칭을 생성
+         matchings = []
+         while len(male_users) > 0 and len(female_users) > 0:
+             male = male_users.sample(1)
+             female = female_users.sample(1)
+             matching = (male['이름'].values[0], female['이름'].values[0])
+             matchings.append(matching)
+             male_users = male_users.drop(male.index)
+             female_users = female_users.drop(female.index)
 
-        # 나머지 매칭 결과 출력
-        for i, (male, female) in enumerate(matchings):
-            st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
+    # 나머지 매칭 결과 출력
+         for i, (male, female) in enumerate(matchings):
+             st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
 
-            # 매칭 결과를 matching_result에 추가
-            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '남자', '이름': male}, ignore_index=True)
-            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '여자', '이름': female}, ignore_index=True)
+        # 매칭 결과를 matching_result에 추가
+             matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '남자', '이름': male}, ignore_index=True)
+             matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '여자', '이름': female}, ignore_index=True)
 
-        # 남는 남자들을 소외된 데이터로 만들어 결과로 출력
-        leftover_male_count = len(male_users)
-        if leftover_male_count > 0:
-            st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
-            leftover_group_count = leftover_male_count // 2
-            i = len(matchings)
+    # 남는 남자들을 소외된 데이터로 만들어 결과로 출력
+         leftover_male_count = len(male_users)
+         if leftover_male_count > 0:
+             st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
+             leftover_group_count = leftover_male_count // 2
+             i = len(matchings)
 
-            for group in range(leftover_group_count):
-                group_text = f"{i + group + 1}"
-                group_males = male_users.sample(2)
-                male_users = male_users.drop(group_males.index)
-
-                st.text(f"매칭 그룹 {group_text} (남자 2명):")
-                for male in group_males['이름']:
-                    st.text(male)
+             for group in range(leftover_group_count):
+                 group_text = f"{i + group + 1}"
+                 group_males = male_users.sample(2)
+                 male_users = male_users.drop(group_males.index)
+            
+                 st.text(f"매칭 그룹 {group_text} (남자 2명):")
+                 for male in group_males['이름']:
+                     st.text(male)
                 # 소외된 남자 매칭 결과를 matching_result에 추가
-                    matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
+                     matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
 
-            # 홀수명의 남자는 단독으로 소외된 데이터 그룹에 추가
-            if len(male_users) == 1:
-                i += leftover_group_count
-                group_text = f"{i + 1}"
-                st.text(f"매칭 그룹 {group_text} (남자 1명):")
-                st.text(male_users.iloc[0]['이름'])
-                # 소외된 남자 매칭 결과를 matching_result에 추가
-                matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
+        # 홀수명의 남자는 단독으로 소외된 데이터 그룹에 추가
+             if len(male_users) == 1:
+                 i += leftover_group_count
+                 group_text = f"{i + 1}"
+                 st.text(f"매칭 그룹 {group_text} (남자 1명):")
+                 st.text(male_users.iloc[0]['이름'])
+            # 소외된 남자 매칭 결과를 matching_result에 추가
+                 matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
 
-        # CSV 파일로 저장 (matching_result에 저장)
-        matching_result.to_csv(matching_result_file, index=False)
+    # CSV 파일로 저장 (matching_result에 저장)
+         matching_result.to_csv(matching_result_file, index=False)
+
+
 
 # 오류 정보를 저장할 변수
     error_info = []
 
 # "오류 정보 검사" 버튼 생성
     if st.button("오류 정보 검사"):
-        csv_file = 'user_data.csv'
-    users = pd.read_csv(csv_file)
+         csv_file = 'user_data.csv'
+         users = pd.read_csv(csv_file)
 
     # 중복된 데이터와 이름 앞에 빈 칸으로 저장된 데이터를 확인
-    duplicates = users[users.duplicated(subset=['이름', '전화번호'], keep=False)]
-    leading_space_names = users[users['이름'].str.startswith(' ')]
-    duplicated_phone_numbers = users[users.duplicated(subset=['전화번호'], keep=False)]
+         duplicates = users[users.duplicated(subset=['이름', '전화번호'], keep=False)]
+         leading_space_names = users[users['이름'].str.startswith(' ')]
+         duplicated_phone_numbers = users[users.duplicated(subset=['전화번호'], keep=False)]
 
     # 중복 데이터와 이름 앞에 빈 칸으로 저장된 데이터를 표시
-    if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
-        st.subheader("오류 데이터")
+         if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
+             st.subheader("오류 데이터")
 
-        if not duplicates.empty:
-            st.markdown("중복 데이터:")
-            for idx, row in duplicates.iterrows():
-                st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+             if not duplicates.empty:
+                 st.markdown("중복 데이터:")
+                 for idx, row in duplicates.iterrows():
+                     st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
 
-        if not leading_space_names.empty:
-            st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
-            for idx, row in leading_space_names.iterrows():
-                st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
-            else:
-              st.subheader("오류 데이터 없음")
+             if not leading_space_names.empty:
+                 st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
+                 for idx, row in leading_space_names.iterrows():
+                     st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+
+             if not duplicated_phone_numbers.empty:
+                 st.markdown("전화번호 중복 데이터:")
+                 for idx, row in duplicated_phone_numbers.iterrows():
+                     st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+         else:
+             st.subheader("오류 데이터 없음")
+
