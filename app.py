@@ -134,13 +134,19 @@ if admin_access == 1:
     time.sleep(2)
     info_message1.empty()
     if st.button("사용자 정보 초기화"):
-     empty_data = pd.DataFrame(columns=["이름", "나이", "성별", "전화번호","매칭그룹"])
-     empty_data.to_csv(csv_file, index=False)
-     empty_data = pd.DataFrame(columns=["이름", "전화번호", "그룹"])
-     empty_data1.to_csv(matching_result, index=False)
-     st.success("사용자 정보가 초기화되었습니다.")
+        empty_data = pd.DataFrame(columns=["이름", "나이", "성별", "전화번호", "매칭그룹"])
+        empty_data.to_csv(csv_file, index=False)
+        empty_data1 = pd.DataFrame(columns=["이름", "전화번호", "그룹"])
+        empty_data1.to_csv(matching_result_file, index=False)  # matching_result_file로 수정
+        st.success("사용자 정보가 초기화되었습니다.")
+        
+        # matching_result 데이터프레임 초기화
+        matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
+
     user_data_file = 'user_data.csv'
     user_data = pd.read_csv(user_data_file)
+    user_data_file1 = 'matching_result.csv'
+    user_data1 = pd.read_csv(user_data_file1)
 
 # Streamlit 앱 생성
     st.title("유저 데이터 검색")
@@ -197,7 +203,7 @@ if admin_access == 1:
 
     if st.button("랜덤 매칭 시작"):
          user_data_file = 'user_data.csv'
-          matching_result_file = 'matching_result.csv'
+         matching_result_file = 'matching_result.csv'
 
          user_data = pd.read_csv(user_data_file)
          matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
@@ -256,9 +262,7 @@ if admin_access == 1:
 # 오류 정보를 저장할 변수
     error_info = []
 
-# "오류 정보 검사" 버튼 생성
-    if st.button("오류 정보 검사"):
-        csv_file = 'user_data.csv'
+    csv_file = 'user_data.csv'
     users = pd.read_csv(csv_file)
 
     # 중복된 데이터와 이름 앞에 빈 칸으로 저장된 데이터를 확인
@@ -279,7 +283,5 @@ if admin_access == 1:
             st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
             for idx, row in leading_space_names.iterrows():
                 st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
-            else:
-              st.subheader("오류 데이터 없음")
-
+        
 
