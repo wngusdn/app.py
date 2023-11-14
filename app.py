@@ -170,10 +170,10 @@ if admin_access == 1:
             male_percentage = male_count / total_count
             female_percentage = female_count / total_count
 
-        if male_percentage > female_percentage:
+    if male_percentage > female_percentage:
                 male_match_probability = 100
                 female_match_probability = female_count / male_count * 100
-        else:
+    else:
                 female_match_probability = 100
                 male_match_probability = male_count / female_count * 100
 
