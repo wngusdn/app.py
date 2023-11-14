@@ -3,7 +3,6 @@ import pandas as pd
 import random
 import time
 import os
-import matplotlib.pyplot as plt
 
 # Your other code here.
 male_percentage = 0
@@ -176,31 +175,7 @@ if admin_access == 1:
     st.markdown("### 사용자 정보")
     user_data = pd.read_csv(csv_file)
     st.dataframe(user_data)
-    # 랜덤 매칭 버튼을 클릭하여 매칭 수행
-    total_users = len(user_data)
-    gender_counts = user_data["성별"].value_counts()
-    total_users = gender_counts.sum()
-    if total_users >= 2:
-        male_count = gender_counts.get("남자", 0)
-        female_count = gender_counts.get("여자", 0)
 
-        male_percentage = (male_count / total_users) * 100
-        female_percentage = (female_count / total_users) * 100
-
-        # 가로 막대 그래프로 백분율 표시
-        fig, ax = plt.subplots(figsize=(8, 2))
-        ax.barh(["남자", "여자"], [male_percentage, female_percentage],
-                color=["blue", "red"])
-        ax.set_xlim(0, 100)
-        ax.set_xlabel("참여현황 백분율 (%)")
-        ax.set_ylabel("성별")
-        for i, v in enumerate([male_percentage, female_percentage]):
-            ax.text(v + 3, i, f"{v:.1f}%", color="black", va="center")
-
-        st.pyplot(fig)
-        user_data = pd.read_csv("user_data.csv")
-# 매칭 확률 계산
-# 먼저 성별 비율을 계산
         total_count = male_count + female_count
 # 사용자 데이터를 불러오기
         user_data = pd.read_csv(
