@@ -160,7 +160,7 @@ if admin_access == 1:
     st.write(f"총 사용자 수: {male_count + female_count}")
 # 결과 출력
 
-        if total_count == 0:
+    if total_count == 0:
             male_match_probability = 0
             female_match_probability = 0
         elif female_count == 0:
