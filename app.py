@@ -214,3 +214,4 @@ if admin_access == 1:
                     st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
         else:
             st.subheader("오류 데이터 없음")
+
