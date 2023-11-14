@@ -176,20 +176,19 @@ if admin_access == 1:
     user_data = pd.read_csv(csv_file)
     st.dataframe(user_data)
 
-        total_count = male_count + female_count
+    total_count = male_count + female_count
 # 사용자 데이터를 불러오기
-        user_data = pd.read_csv(
-            'user_data.csv')  # user_data.csv 파일 경로에 따라 수정
+    user_data = pd.read_csv('user_data.csv')  # user_data.csv 파일 경로에 따라 수정
 
 # 성별을 기반으로 "male", "female" 및 "total" 값을 계산
-        male_count = st.session_state.users[st.session_state.users["성별"]
+    male_count = st.session_state.users[st.session_state.users["성별"]
                                             == "남자"].shape[0]
-        female_count = st.session_state.users[st.session_state.users["성별"]
+    female_count = st.session_state.users[st.session_state.users["성별"]
                                               == "여자"].shape[0]
 
-        st.write(f"남자 수: {male_count}")
-        st.write(f"여자 수: {female_count}")
-        st.write(f"총 사용자 수: {male_count + female_count}")
+    st.write(f"남자 수: {male_count}")
+    st.write(f"여자 수: {female_count}")
+    st.write(f"총 사용자 수: {male_count + female_count}")
 # 결과 출력
 
         if total_count == 0:
