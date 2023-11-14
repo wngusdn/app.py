@@ -163,22 +163,22 @@ if admin_access == 1:
     if total_count == 0:
             male_match_probability = 0
             female_match_probability = 0
-        elif female_count == 0:
+    elif female_count == 0:
             male_match_probability = 100
             female_match_probability = 0
-        else:
+    else:
             male_percentage = male_count / total_count
             female_percentage = female_count / total_count
 
-            if male_percentage > female_percentage:
+        if male_percentage > female_percentage:
                 male_match_probability = 100
                 female_match_probability = female_count / male_count * 100
-            else:
+        else:
                 female_match_probability = 100
                 male_match_probability = male_count / female_count * 100
 
-        st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
-        st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
+    st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
+    st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
 
     if st.button("랜덤 매칭 시작"):
         user_data_file = 'user_data.csv'
