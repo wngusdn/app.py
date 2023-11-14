@@ -10,13 +10,6 @@ female_percentage = 0
 male_match_probability = 0
 female_match_probability = 0
 
-# 오른쪽 위 모서리에 텍스트 추가
-st.markdown('<p style="position: absolute; top: 10px; right: 10px; color: blue; font-size: 24px; font-weight: bold;">iOS</p>', unsafe_allow_html=True)
-
-plt.rc('font', family='AppleGothic')  # mac
-plt.rc('font', size=15)
-plt.rc('axes', unicode_minus=False)
-
 # 사용자 정보를 저장할 CSV 파일명
 csv_file = "user_data.csv"
 matching_result_file = "matching_result.csv"
@@ -59,33 +52,9 @@ if "users" not in st.session_state:
     else:
         st.session_state.users = pd.DataFrame()
 
-# CSS 및 JavaScript 코드
-css = """
-<style>
-  .animate {
-    animation: zoom 3s infinite;
-  }
-  @keyframes zoom {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-</style>
-"""
-
-js = """
-<script>
-  // JavaScript 코드는 여기에 추가할 수 있습니다.
-</script>
-"""
 # HTML 코드로 애니메이션 텍스트 추가
-st.write(f'{css}<div class="animate"><h1>Random Matching2</h1></div>{js}', unsafe_allow_html=True)
+st.write('<style>.animate {animation: zoom 3s infinite;} @keyframes zoom {0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);}}</style>')
+st.write('<div class="animate"><h1>Random Matching2</h1></div>')
 
 # 사용자 정보 입력
 st.markdown("#### 사용자 정보 입력(필수)")
@@ -279,40 +248,42 @@ if admin_access == 1:
 # 오류 정보를 저장할 변수
     error_info = []
 
+# 오류 정보를 저장할 변수
+error_info = []
+
 # "오류 정보 검사" 버튼 생성
-    if st.button("오류 정보 검사"):
-        csv_file = 'user_data.csv'
-        users = pd.read_csv(csv_file)
+if st.button("오류 정보 검사"):
+    csv_file = 'user_data.csv'
+    users = pd.read_csv(csv_file)
 
     # 중복된 데이터와 이름 앞에 빈 칸으로 저장된 데이터를 확인
-        duplicates = users[users.duplicated(
-            subset=['이름', '전화번호'], keep=False)]
-        leading_space_names = users[users['이름'].str.startswith(' ')]
-        duplicated_phone_numbers = users[users.duplicated(
-            subset=['전화번호'], keep=False)]
+    duplicates = users[users.duplicated(
+        subset=['이름', '전화번호'], keep=False)]
+    leading_space_names = users[users['이름'].str.startswith(' ')]
+    duplicated_phone_numbers = users[users.duplicated(
+        subset=['전화번호'], keep=False)]
 
     # 중복 데이터와 이름 앞에 빈 칸으로 저장된 데이터를 표시
-        if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
-            st.subheader("오류 데이터")
+    if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
+        st.subheader("오류 데이터")
 
-            if not duplicates.empty:
-                st.markdown("중복 데이터:")
-                for idx, row in duplicates.iterrows():
-                    st.markdown(
-                        f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+        if not duplicates.empty:
+            st.markdown("중복 데이터:")
+            for idx, row in duplicates.iterrows():
+                st.markdown(
+                    f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
 
-            if not leading_space_names.empty:
-                st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
-                for idx, row in leading_space_names.iterrows():
-                    st.markdown(
-                        f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+        if not leading_space_names.empty:
+            st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
+            for idx, row in leading_space_names.iterrows():
+                st.markdown(
+                    f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
 
-            if not duplicated_phone_numbers.empty:
-                st.markdown("전화번호 중복 데이터:")
-                for idx, row in duplicated_phone_numbers.iterrows():
-                    st.markdown(
-                        f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
-        else:
-            st.subheader("오류 데이터 없음")
-
+        if not duplicated_phone_numbers.empty:
+            st.markdown("전화번호 중복 데이터:")
+            for idx, row in duplicated_phone_numbers.iterrows():
+                st.markdown(
+                    f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+    else:
+        st.subheader("오류 데이터 없음")
 
