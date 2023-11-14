@@ -108,7 +108,7 @@ if admin_access == 1:
         empty_data1.to_csv(matching_result_file, index=False)
         st.success("사용자 정보가 초기화되었습니다.")
     
-    st.title("유저 데이터 검색")
+    st.markdown("###유저 데이터 검색")
 
     # 이름으로 검색하는 Streamlit 앱
     search_name = st.text_input("검색할 이름을 입력하세요:")
@@ -189,8 +189,6 @@ if admin_access == 1:
             female_data = {'매칭 그룹': matching['매칭 그룹'], '성별': '여자', '이름': matching['이름']}
             matching_result = matching_result.append(male_data, ignore_index=True)
             matching_result = matching_result.append(female_data, ignore_index=True)
-
-        matching_result.to_csv(matching_result_file, index=False)
 
     # 오류 정보 검사
     if st.button("오류 정보 검사"):
