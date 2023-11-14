@@ -107,131 +107,131 @@ if admin_access == 1:
         empty_data1 = pd.DataFrame(columns=["이름", "전화번호", "매칭그룹"])
         empty_data1.to_csv(matching_result_file, index=False)
         st.success("사용자 정보가 초기화되었습니다.")
-        st.title("유저 데이터 검색")
+    st.title("유저 데이터 검색")
 
 # 이름으로 검색하는 Streamlit 앱
-        search_name = st.text_input("검색할 이름을 입력하세요:")
+    search_name = st.text_input("검색할 이름을 입력하세요:")
 
-        if st.button("검색"):
-            search_result = st.session_state.users[st.session_state.users['이름'] == search_name]
-            if not search_result.empty:
-                st.subheader(f"{search_name}에 대한 정보:")
-                for idx, row in search_result.iterrows():
-                    st.write(f"인덱스: {idx}, 전화번호 {row['전화번호']}, 성별: {row['성별']}")
-            else:
-                st.write(f"{search_name}에 대한 정보를 찾을 수 없습니다.")
+    if st.button("검색"):
+        search_result = st.session_state.users[st.session_state.users['이름'] == search_name]
+        if not search_result.empty:
+            st.subheader(f"{search_name}에 대한 정보:")
+            for idx, row in search_result.iterrows():
+                st.write(f"인덱스: {idx}, 전화번호 {row['전화번호']}, 성별: {row['성별']}")
+        else:
+            st.write(f"{search_name}에 대한 정보를 찾을 수 없습니다.")
 
 # 사용자 정보 출력
-        st.markdown("### 사용자 정보")
-        user_data = st.session_state.users
-        st.dataframe(user_data)
+    st.markdown("### 사용자 정보")
+    user_data = st.session_state.users
+    st.dataframe(user_data)
 
 # 랜덤 매칭 버튼을 클릭하여 매칭 수행
-        total_users = len(user_data)
-        gender_counts = user_data["성별"].value_counts()
-        total_users = gender_counts.sum()
+    total_users = len(user_data)
+    gender_counts = user_data["성별"].value_counts()
+    total_users = gender_counts.sum()
 
-        if total_users >= 2:
-            male_count = gender_counts.get("남자", 0)
-            female_count = gender_counts.get("여자", 0)
+    if total_users >= 2:
+        male_count = gender_counts.get("남자", 0)
+        female_count = gender_counts.get("여자", 0)
 
-            male_percentage = (male_count / total_users) * 100
-            female_percentage = (female_count / total_users) * 100
+        male_percentage = (male_count / total_users) * 100
+        female_percentage = (female_count / total_users) * 100
 
-            st.write(f"남자 수: {male_count}")
-            st.write(f"여자 수: {female_count}")
-            st.write(f"총 사용자 수: {male_count + female_count}")
+        st.write(f"남자 수: {male_count}")
+        st.write(f"여자 수: {female_count}")
+        st.write(f"총 사용자 수: {male_count + female_count}")
 
-            if total_users == 0:
-                male_match_probability = 0
-                female_match_probability = 0
-            elif female_count == 0:
+        if total_users == 0:
+            male_match_probability = 0
+            female_match_probability = 0
+        elif female_count == 0:
+            male_match_probability = 100
+            female_match_probability = 0
+        else:
+            male_percentage = male_count / total_users
+            female_percentage = female_count / total_users
+
+            if male_percentage > female_percentage:
                 male_match_probability = 100
-                female_match_probability = 0
+                female_match_probability = female_count / male_count * 100
             else:
-                male_percentage = male_count / total_users
-                female_percentage = female_count / total_users
+                female_match_probability = 100
+                male_match_probability = male_count / female_count * 100
 
-                if male_percentage > female_percentage:
-                    male_match_probability = 100
-                    female_match_probability = female_count / male_count * 100
-                else:
-                    female_match_probability = 100
-                    male_match_probability = male_count / female_count * 100
+        st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
+        st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
 
-            st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
-            st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
+    if st.button("랜덤 매칭 시작"):
+        user_data = st.session_state.users
+        matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
 
-        if st.button("랜덤 매칭 시작"):
-            user_data = st.session_state.users
-            matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
+        male_users = user_data[user_data['성별'] == '남자']
+        female_users = user_data[user_data['성별'] == '여자']
 
-            male_users = user_data[user_data['성별'] == '남자']
-            female_users = user_data[user_data['성별'] == '여자']
+        matchings = []
 
-            matchings = []
+        while len(male_users) > 0 and len(female_users) > 0:
+            male = male_users.sample(1)
+            female = female_users.sample(1)
+            matching = (male['이름'].values[0], female['이름'].values[0])
+            matchings.append(matching)
+            male_users = male_users.drop(male.index)
+            female_users = female_users.drop(female.index)
 
-            while len(male_users) > 0 and len(female_users) > 0:
-                male = male_users.sample(1)
-                female = female_users.sample(1)
-                matching = (male['이름'].values[0], female['이름'].values[0])
-                matchings.append(matching)
-                male_users = male_users.drop(male.index)
-                female_users = female_users.drop(female.index)
+        for i, (male, female) in enumerate(matchings):
+            st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
 
-            for i, (male, female) in enumerate(matchings):
-                st.text(f"매칭 그룹 {i + 1}: {male}와 {female}")
+            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '남자', '이름': male}, ignore_index=True)
+            matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '여자', '이름': female}, ignore_index=True)
 
-                matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '남자', '이름': male}, ignore_index=True)
-                matching_result = matching_result.append({'매칭 그룹': i + 1, '성별': '여자', '이름': female}, ignore_index=True)
+        leftover_male_count = len(male_users)
 
-            leftover_male_count = len(male_users)
+        if leftover_male_count > 0:
+            st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
+            leftover_group_count = leftover_male_count // 2
+            i = len(matchings)
 
-            if leftover_male_count > 0:
-                st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
-                leftover_group_count = leftover_male_count // 2
-                i = len(matchings)
+            for group in range(leftover_group_count):
+                group_text = f"{i + group + 1}"
+                group_males = male_users.sample(2)
+                male_users = male_users.drop(group_males.index)
 
-                for group in range(leftover_group_count):
-                    group_text = f"{i + group + 1}"
-                    group_males = male_users.sample(2)
-                    male_users = male_users.drop(group_males.index)
+                st.text(f"매칭 그룹 {group_text} (남자 2명):")
+                for male in group_males['이름']:
+                    st.text(male)
 
-                    st.text(f"매칭 그룹 {group_text} (남자 2명):")
-                    for male in group_males['이름']:
-                        st.text(male)
+                    matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
 
-                        matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
+            if len(male_users) == 1:
+                i += leftover_group_count
+                group_text = f"{i + 1}"
+                st.text(f"매칭 그룹 {group_text} (남자 1명):")
+                st.text(male_users.iloc[0]['이름'])
 
-                if len(male_users) == 1:
-                    i += leftover_group_count
-                    group_text = f"{i + 1}"
-                    st.text(f"매칭 그룹 {group_text} (남자 1명):")
-                    st.text(male_users.iloc[0]['이름'])
+                matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
 
-                    matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
-
-            matching_result.to_csv(matching_result_file, index=False)
+        matching_result.to_csv(matching_result_file, index=False)
 
 # 오류 정보 검사
-        if st.button("오류 정보 검사"):
-            users = st.session_state.users
+    if st.button("오류 정보 검사"):
+        users = st.session_state.users
 
-            duplicates = users[users.duplicated(subset=['이름', '전화번호'], keep=False)]
-            leading_space_names = users[users['이름'].str.startswith(' ')]
-            duplicated_phone_numbers = users[users.duplicated(subset=['전화번호'], keep=False)]
+        duplicates = users[users.duplicated(subset=['이름', '전화번호'], keep=False)]
+        leading_space_names = users[users['이름'].str.startswith(' ')]
+        duplicated_phone_numbers = users[users.duplicated(subset=['전화번호'], keep=False)]
 
-            if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
-                st.subheader("오류 데이터")
+        if not duplicates.empty or not leading_space_names.empty or not duplicated_phone_numbers.empty:
+            st.subheader("오류 데이터")
 
-                if not duplicates.empty:
-                    st.markdown("중복 데이터:")
-                    for idx, row in duplicates.iterrows():
-                        st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+            if not duplicates.empty:
+                st.markdown("중복 데이터:")
+                for idx, row in duplicates.iterrows():
+                    st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
 
-                if not leading_space_names.empty:
-                    st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
-                    for idx, row in leading_space_names.iterrows():
-                        st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
-            else:
-                st.subheader("오류 데이터 없음")
+            if not leading_space_names.empty:
+                st.markdown("이름 앞에 빈 칸으로 저장된 데이터:")
+                for idx, row in leading_space_names.iterrows():
+                    st.markdown(f'<p style="color: red;">인덱스: {idx}, 이름: {row["이름"]}, 전화번호: {row["전화번호"]}</p>', unsafe_allow_html=True)
+        else:
+            st.subheader("오류 데이터 없음")
