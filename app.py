@@ -159,8 +159,11 @@ if admin_access == 1:
                 female_match_probability = 100
                 male_match_probability = male_count / female_count * 100
 
-        st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
+        st.write(f"남자 매칭 성공 확률: {male_match_probability:.2f}%")
+        st.write(f"여자 매칭 성공 확률: {female_match_probability:.2f}%")
+        
    # 랜덤 매칭 버튼을 클릭하여 매칭 수행
+    # 랜덤 매칭 버튼을 클릭하여 매칭 수행
     if st.button("랜덤 매칭 시작"):
         user_data = st.session_state.users
         matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
@@ -177,10 +180,11 @@ if admin_access == 1:
             matchings.append({'매칭 그룹': len(matchings) + 1, '성별': '여자', '이름': female['이름'].values[0]})
             male_users = male_users.drop(male.index)
             female_users = female_users.drop(female.index)
-    
-        for matching in matchings:
-            st.text(f"매칭 그룹 {matching['매칭 그룹']}: {matching['이름']}와 {matchings[i+1]['이름']}")
-            matching_result = matching_result.append(matching, ignore_index=True)
+
+        for i in range(0, len(matchings), 2):
+            st.text(f"매칭 그룹 {matchings[i]['매칭 그룹']}: {matchings[i]['이름']}와 {matchings[i+1]['이름']}")
+            matching_result = matching_result.append(matchings[i], ignore_index=True)
+            matching_result = matching_result.append(matchings[i+1], ignore_index=True)
 
         leftover_male_count = len(male_users)
 
@@ -209,9 +213,6 @@ if admin_access == 1:
                 matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
 
         matching_result.to_csv(matching_result_file, index=False)
-
-# ...
-
 
 # 오류 정보 검사
     if st.button("오류 정보 검사"):
