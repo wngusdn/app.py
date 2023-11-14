@@ -164,6 +164,7 @@ if admin_access == 1:
         
    # 랜덤 매칭 버튼을 클릭하여 매칭 수행
     # 랜덤 매칭 버튼을 클릭하여 매칭 수행
+    matching_result = load_matching_result()
     if st.button("랜덤 매칭 시작"):
         user_data = st.session_state.users
         matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
