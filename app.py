@@ -160,62 +160,55 @@ if admin_access == 1:
                 male_match_probability = male_count / female_count * 100
 
         st.write(f"여자 매칭 성공 확률: {male_match_probability:.2f}%")
-        st.write(f"남자 매칭 성공 확률: {female_match_probability:.2f}%")
+   # 랜덤 매칭 버튼을 클릭하여 매칭 수행
+    if st.button("랜덤 매칭 시작"):
+        user_data = st.session_state.users
+        matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
 
-    # ...
+        male_users = user_data[user_data['성별'] == '남자']
+        female_users = user_data[user_data['성별'] == '여자']
 
-# 랜덤 매칭 버튼을 클릭하여 매칭 수행
-if st.button("랜덤 매칭 시작"):
-    user_data = st.session_state.users
-    matching_result = pd.DataFrame(columns=['매칭 그룹', '성별', '이름'])
+        matchings = []
 
-    male_users = user_data[user_data['성별'] == '남자']
-    female_users = user_data[user_data['성별'] == '여자']
+        while len(male_users) > 0 and len(female_users) > 0:
+            male = male_users.sample(1)
+            female = female_users.sample(1)
+            matchings.append({'매칭 그룹': len(matchings) + 1, '성별': '남자', '이름': male['이름'].values[0]})
+            matchings.append({'매칭 그룹': len(matchings) + 1, '성별': '여자', '이름': female['이름'].values[0]})
+            male_users = male_users.drop(male.index)
+            female_users = female_users.drop(female.index)
+    
+        for matching in matchings:
+            st.text(f"매칭 그룹 {matching['매칭 그룹']}: {matching['이름']}와 {matchings[i+1]['이름']}")
+            matching_result = matching_result.append(matching, ignore_index=True)
 
-    matchings = []
+        leftover_male_count = len(male_users)
 
-    while len(male_users) > 0 and len(female_users) > 0:
-        male = male_users.sample(1)
-        female = female_users.sample(1)
-        matching = {'매칭 그룹': len(matchings) + 1, '성별': '남자', '이름': male['이름'].values[0]}
-        matchings.append(matching)
-        matching = {'매칭 그룹': len(matchings) + 1, '성별': '여자', '이름': female['이름'].values[0]}
-        matchings.append(matching)
-        male_users = male_users.drop(male.index)
-        female_users = female_users.drop(female.index)
+        if leftover_male_count > 0:
+            st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
+            leftover_group_count = leftover_male_count // 2
+            i = len(matchings)
 
-    for i, matching in enumerate(matchings):
-        st.text(f"매칭 그룹 {matching['매칭 그룹']}: {matching['이름']}와 {matchings[i+1]['이름']}")
-        matching_result = matching_result.append(matching, ignore_index=True)
-        matching_result = matching_result.append(matchings[i+1], ignore_index=True)
+            for group in range(leftover_group_count):
+                group_text = f"{i + group + 1}"
+                group_males = male_users.sample(2)
+                male_users = male_users.drop(group_males.index)
 
-    leftover_male_count = len(male_users)
+                st.text(f"매칭 그룹 {group_text} (남자 2명):")
+                for male in group_males['이름']:
+                    st.text(male)
 
-    if leftover_male_count > 0:
-        st.write(f"{leftover_male_count}명의 남자가 소외되었습니다.")
-        leftover_group_count = leftover_male_count // 2
-        i = len(matchings)
+                    matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
 
-        for group in range(leftover_group_count):
-            group_text = f"{i + group + 1}"
-            group_males = male_users.sample(2)
-            male_users = male_users.drop(group_males.index)
+            if len(male_users) == 1:
+                i += leftover_group_count
+                group_text = f"{i + 1}"
+                st.text(f"매칭 그룹 {group_text} (남자 1명):")
+                st.text(male_users.iloc[0]['이름'])
 
-            st.text(f"매칭 그룹 {group_text} (남자 2명):")
-            for male in group_males['이름']:
-                st.text(male)
+                matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
 
-                matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male}, ignore_index=True)
-
-        if len(male_users) == 1:
-            i += leftover_group_count
-            group_text = f"{i + 1}"
-            st.text(f"매칭 그룹 {group_text} (남자 1명):")
-            st.text(male_users.iloc[0]['이름'])
-
-            matching_result = matching_result.append({'매칭 그룹': group_text, '성별': '남자', '이름': male_users.iloc[0]['이름']}, ignore_index=True)
-
-    matching_result.to_csv(matching_result_file, index=False)
+        matching_result.to_csv(matching_result_file, index=False)
 
 # ...
 
